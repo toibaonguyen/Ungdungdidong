@@ -5,7 +5,6 @@ export default function Workplace({Navigation}) {
     return(
      <View style={{justifyContent:'center',alignItems:'center'}}>
          <Text>This is workplace tab</Text>
-
      </View>
 
     );
