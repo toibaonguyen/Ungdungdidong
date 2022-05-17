@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     },
   });
 
-export default function Addtodo(props) {
+export default function Addtodo1(props) {
     const [day, setDay] = useState(new Date());
     const [date, setDate] = useState("Chọn ngày");
     const [time,setTime]=useState("Chọn thời gian")
@@ -62,14 +62,14 @@ export default function Addtodo(props) {
       
         await db.transaction(async(tx)=>{
             
-            await tx.executeSql("insert into TASK (name,description,priority,tag,endtime,completed) values(?,?,?,?,?,?)",
-            [mainstate.name,mainstate.des,mainstate.type,mainstate.tag,mainstate.day,0],
+            await tx.executeSql("insert into loopTASK (name,description,priority,tag,time) values(?,?,?,?,?)",
+            [mainstate.name,mainstate.des,mainstate.type,mainstate.tag,mainstate.day],
             (tx,results)=>{alert("Nhập dữ liệu thành công");},
             error=>{alert("lỗi r ông cháu ơi")}
             )      
         })
         await db.transaction(async(tx)=>{
-            await tx.executeSql("select max(id) as maxid from TASK",
+            await tx.executeSql("select max(id) as maxid from loopTASK",
             [],
             (tx,results)=>{num=results.rows.item(0).maxid;
             console.log("maxid:"+ num);},
@@ -80,7 +80,7 @@ export default function Addtodo(props) {
        
         if(leng>0)
         {
-            let vq="insert into miniTASK VALUES "
+            let vq="insert into loopminiTASK VALUES "
             for(let i=0;i<leng;i++)
             {
               meme.push(num,mainstate.list[i].value);
@@ -157,8 +157,6 @@ export default function Addtodo(props) {
             await tx.executeSql("select id, name from FORM",
             [],
             (tx,results)=>{
-          
-                
                 const len=results.rows.length;
                 //setformlist([]);
                 //alert(len)

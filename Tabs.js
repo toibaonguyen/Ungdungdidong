@@ -19,17 +19,17 @@ export default function Tabs() {
       screenOptions={{tabBarActiveBackgroundColor:'#3F3F3F',
       tabBarInactiveBackgroundColor:'#3F3F3F',
       headerStyle:{
-        backgroundColor: '#1C1C1C',  
+        backgroundColor: '#1C1C1C', 
       },
+      
+      
+      
+      
       headerTintColor: '#fff',
       headerTitleStyle: {
         fontWeight: 'bold',
       },
-    }}
-      
-      
-      
-      >
+    }} >
         <Tab.Screen name="timeline" component={Timeline} 
         options={{title:"Việc cần làm"}}
         />

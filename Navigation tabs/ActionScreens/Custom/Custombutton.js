@@ -18,7 +18,7 @@ export default function Custombutton(props) {
             >
             <Icon name = {props.icon} size={20} color="white"/>
             <Text style={{color:'white',fontSize:20}}>{props.Text}</Text>
-            </TouchableOpacity>
+        </TouchableOpacity>
 
     )
 }
