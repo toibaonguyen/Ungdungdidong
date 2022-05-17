@@ -14,6 +14,8 @@ import SQLite from 'react-native-sqlite-storage';
 import Custombutton from './ActionScreens/Custom/Custombutton';
 import Custombutton1 from './ActionScreens/Custom/Custombutton1';
 import Fullinfoscreen from './ActionScreens/Fullinfoscreen';
+
+
 var db=SQLite.openDatabase({name:"mainDB.sqlite3", createFromLocation:1,location:"default"},
 ()=>{console.log("perfect")},
 (error)=>{alert(error)})
