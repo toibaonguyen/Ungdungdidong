@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Octicons'
 import { useState } from 'react/cjs/react.development';
 import SQLite from 'react-native-sqlite-storage';
 
-var db=SQLite.openDatabase({name:"mainDB.sqlite3", createFromLocation:1,location:"default"},
+var db=SQLite.openDatabase({name:"mainDB.sqlite3", createFromLocation:1,location:"Library"},
 ()=>{},
 (error)=>{alert(error)})
 
@@ -69,9 +69,7 @@ export default function Custombutton1(props) {
 
     return(
         <View
-            style={{backgroundColor:btncolor,height:50,flexDirection:"row"}}
-            
-           
+            style={{backgroundColor:btncolor,height:50,flexDirection:"row",flex:1}}
             >
             <View style={{flex:5,alignItems:'center'}}>
             <TouchableOpacity onPress={()=>{setfinish}} style={{alignItems:"center",justifyContent:"center"}}>
