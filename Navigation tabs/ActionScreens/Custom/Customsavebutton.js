@@ -11,7 +11,7 @@ export default function Customsavebutton(props){
     return(
 
         <TouchableOpacity style={{height:40,justifyContent:'center',borderRadius:20,backgroundColor:btncolor1,
-        alignItems:"center",borderColor:"white",borderWidth:1,marginTop:props.mgtop,borderColor:"black"
+        alignItems:"center",borderColor:"white",borderWidth:1,marginTop:props.mgtop,borderColor:"black",marginTop:5
 }} 
         onPress={props.onPress}
         onPressOut={()=>{setbtncolor1("#3498db")}}

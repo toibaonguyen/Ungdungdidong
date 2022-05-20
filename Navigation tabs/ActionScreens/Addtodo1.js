@@ -14,7 +14,7 @@ import ActionButton from 'react-native-action-button';
 //database right here
 
 import SQLite from 'react-native-sqlite-storage';
-var db=SQLite.openDatabase({name:"mainDB.sqlite3", createFromLocation:1,location:"Library"},
+var db=SQLite.openDatabase({name:"mainDB",location:"Library"},
 ()=>{},
 (error)=>{alert(error)})
 

@@ -14,7 +14,7 @@ import ActionButton from 'react-native-action-button';
 //database right here
 
 import SQLite from 'react-native-sqlite-storage';
-var db=SQLite.openDatabase({name:"mainDB.sqlite3", createFromLocation:1,location:"Library"},
+var db=SQLite.openDatabase({name:"mainDB",location:"Library"},
 ()=>{},
 (error)=>{alert(error)})
 
@@ -56,7 +56,6 @@ export default function Addtodo(props) {
         let meme=[];
         let num;
         var bigqery;
-        
         let leng=mainstate.list.length;
         
       
@@ -158,11 +157,7 @@ export default function Addtodo(props) {
             [],
             (tx,results)=>{
           
-                
                 const len=results.rows.length;
-                //setformlist([]);
-                //alert(len)
-                
                 if(len>0){
                     let newarr=[]
                     for(let i=0;i<len;i++){

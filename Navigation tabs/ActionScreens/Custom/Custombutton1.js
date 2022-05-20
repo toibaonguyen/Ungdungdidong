@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Octicons'
 import { useState } from 'react/cjs/react.development';
 import SQLite from 'react-native-sqlite-storage';
 
-var db=SQLite.openDatabase({name:"mainDB.sqlite3", createFromLocation:1,location:"Library"},
+var db=SQLite.openDatabase({name:"mainDB",location:"Library"},
 ()=>{},
 (error)=>{alert(error)})
 

@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { Text, View,StyleSheet,Dimensions,ScrollView,FlatList,Button} from 'react-native';
+import { Text, View,StyleSheet,Dimensions,ScrollView,FlatList,Button,TouchableOpacity} from 'react-native';
 
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/MaterialIcons'
@@ -10,18 +10,20 @@ import { useEffect,useState } from 'react'
 import Addtodo from './ActionScreens/Addtodo';
 import useWindowDimensions from 'react-native/Libraries/Utilities/useWindowDimensions';
 import Addtodo1 from './ActionScreens/Addtodo1';
-import SQLite from 'react-native-sqlite-storage';
+
 import Custombutton from './ActionScreens/Custom/Custombutton';
 import Custombutton1 from './ActionScreens/Custom/Custombutton1';
 import Fullinfoscreen from './ActionScreens/Fullinfoscreen';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 
 
 
-var db=SQLite.openDatabase({name:"mainDB.sqlite3", createFromLocation:1,location:"Library"},
-()=>{console.log("perfect")},
-(error)=>{alert(error)})
+import SQLite from 'react-native-sqlite-storage';
+import Ditmemetvaicac from './ActionScreens/Custom/Ditmemetvaicac';
+const db=SQLite.openDatabase({name:"mainDB",location:"Library"},
+()=>{console.log("wtf")},
+(error)=>{console.log("loimeroi")})
+
 
 export default function Timeline({Navigation}) {
     const [isvimodal,setisvimodal]=useState(false);
@@ -34,48 +36,80 @@ export default function Timeline({Navigation}) {
    
     const seemore=(id)=>{
       setfullyviewitemwithid(id)
+      console.log("ok: "+id)
       setisvimodal2(true)
 
     }
-
-    function getdata(){
-      db.transaction(tx=>{
+    useEffect(()=>{
+      db.transaction((tx)=>{
         tx.executeSql("select * from TASK",
-        [],
-        (tx,results)=>{
-          
-          const len=results.rows.length;  
-          if(len>0)
-          {
-            
-            let newarrqq=[];
-            
-            for(let i=0;i<len;i++)
-            {
-              newarrqq.push({id: results.rows.item(i).ID,name: results.rows.item(i).name,time:new Date(results.rows.item(i).endtime).toLocaleString(),isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag})
-            
-              //setitemlist(itemlist=>([...itemlist,{id: results.rows.item(i).ID,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag}]))
-            }
+       [],
+       (tx,results)=>{
+         
+         const len=results.rows.length;  
+         if(len>0)
+         {
+           
+           let newarrqq=[];
+           
+           for(let i=0;i<len;i++)
+           {
+             
+             newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+           
+           }
+           setitemlist(newarrqq);
+           console.log(itemlist);
+           console.log(newarrqq);
+           console.log(len);
+           
 
-            
-            setitemlist(newarrqq)
-            console.log(itemlist);
-            console.log(newarrqq);
-            console.log(len);
-            
+           setdk(itemlist.length>0);
+           console.log(dk)
+         }
+       },
+       error=>{console.log(error)}
+       )
+     })
 
-            setdk(itemlist.length>0);
-            console.log(dk)
-          }
-        },
-        error=>{console.log(error)}
-        )})}
+    },[])
+    useEffect(()=>{
+      db.transaction((tx)=>{
+        tx.executeSql("select * from TASK",
+       [],
+       (tx,results)=>{
+         
+         const len=results.rows.length;  
+         if(len>0)
+         {
+           
+           let newarrqq=[];
+           
+           for(let i=0;i<len;i++)
+           {
+             
+             newarrqq.push({id: results.rows.item(i).ID,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+           
+           }
+           setitemlist(newarrqq);
+           console.log(itemlist);
+           console.log(newarrqq);
+           console.log(len);
+           
 
-     useEffect(()=>{
-       getdata();
+           setdk(itemlist.length>0);
+           console.log(dk)
+         }
+       },
+       error=>{console.log(error)}
+       )
+     })
+
+    },[isvimodal])
+
+       
       
-     },[isvimodal])
-  
+     
 
     
     return(
@@ -95,7 +129,25 @@ export default function Timeline({Navigation}) {
         >
           <Fullinfoscreen onPress={()=>setisvimodal2(false)} id={fullyviewitemwithid}/>
         </Modal> 
-        <ActionButton buttonColor="rgba(0,0,0,1)" >
+        
+        {
+          itemlist.length>0
+          ?
+          <FlatList style={{marginTop:5}}
+          data={itemlist}
+          keyExtractor={item=>item.id}
+          renderItem={({item})=>(
+            <View key={item.id}>
+              <Ditmemetvaicac name={item.name} id={item.id} time={item.time} isdone={item.isdone} onPress={()=>{seemore(item.id)}}/>
+            </View>
+          )
+        }
+          />:<Text style={{alignSelf:"center"}}>Không có việc cần làm</Text>
+         
+          
+   
+        }
+        <ActionButton buttonColor="rgba(0,0,0,1)" autoInactive={false}>
           <ActionButton.Item buttonColor='#3498db' title="Việc định kì" onPress={() => {setisvimodal1(true)}}>
             <Icon name="loop" style={styles.actionButtonIcon} />
           </ActionButton.Item>
@@ -103,36 +155,6 @@ export default function Timeline({Navigation}) {
             <Icon name="calendar-today" style={styles.actionButtonIcon} />
           </ActionButton.Item>
         </ActionButton>
-        {
-          dk&&
-          <FlatList data={itemlist}
-          style={{marginTop:5}}
-          key={item=>item.id}
-          renderItem={({item})=>(
-            <View style={{borderWidth:1,borderColor:"black",height:70,width:Dimensions.get("window").width-10,flexDirection:"row",flex:1,alignItems:"center"}}>
-              <View style={{marginLeft:10,flex:1}}>
-              <TouchableOpacity style={{height:20,width:20,borderRadius:10,borderColor:"black",borderWidth:2,backgroundColor:item.isdone?"blue":"white"}}
-               onPress={()=>{}}/>
-              </View>
-              <View style={{flex:6}}>
-              <Text style={{marginLeft:5,fontSize:20}}>{item.name}</Text>
-              <Text style={{marginLeft:5}}>{item.time}</Text>
-              </View>
-              <View style={{flex:2,justifyContent:"center"}}>
-              <TouchableOpacity 
-              style={{height:30,width:80,borderWidth:1,backgroundColor:"#338ECC",justifyContent:"center"}}
-              onPress={alert("testnn")}
-              >
-                <Text style={{alignSelf:"center"}}>Chi tiết</Text>
-              </TouchableOpacity>
-              </View>
-              
-              
-
-            </View>
-          )}
-          />
-        }
         
      
         

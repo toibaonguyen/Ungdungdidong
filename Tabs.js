@@ -29,7 +29,9 @@ export default function Tabs() {
       headerTitleStyle: {
         fontWeight: 'bold',
       },
-    }} >
+    }} 
+    
+    >
         <Tab.Screen name="timeline" component={Timeline} 
         options={{title:"Việc cần làm"}}
         />
