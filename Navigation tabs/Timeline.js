@@ -20,6 +20,7 @@ import Fullinfoscreen from './ActionScreens/Fullinfoscreen';
 
 import SQLite from 'react-native-sqlite-storage';
 import Ditmemetvaicac from './ActionScreens/Custom/Ditmemetvaicac';
+import Homnaymetvailon from './ActionScreens/Custom/Homnaymetvailon';
 const db=SQLite.openDatabase({name:"mainDB",location:"Library"},
 ()=>{console.log("wtf")},
 (error)=>{console.log("loimeroi")})
@@ -29,14 +30,47 @@ export default function Timeline({Navigation}) {
     const [isvimodal,setisvimodal]=useState(false);
     const [isvimodal1,setisvimodal1]=useState(false);
     const [isvimodal2,setisvimodal2]=useState(false);
+    
+    const [isvimodal3,setisvimodal3]=useState(false);
     const [itemlist,setitemlist]=useState([]);
-    const [fullyviewitemwithid,setfullyviewitemwithid]=useState(-1)
+    const [fullyviewitemwithid,setfullyviewitemwithid]=useState()
     const [check,setcheck]=useState(0)
     const [dk,setdk]=useState(false)
+    const [idn,setidn]=useState()
+    const [rf,setrf]=useState(0)
+
+
+    function concainit(id){
+      setidn(id);
+      setisvimodal3(true);
+
+    }
+    
+    function deleteitem(){
+      db.transaction(tx=>{
+        tx.executeSql("delete from minitask where idmaintask=?",
+        [idn],
+        ()=>{console.log("delete complete")},
+        error=>console.log(error))
+
+
+      })
+      db.transaction(tx=>{
+        tx.executeSql("delete from TASK where id=?",
+        [idn],
+        ()=>{console.log("delete complete 1")},
+        error=>console.log(error))
+
+
+      })
+      setitemlist(itemlist.filter(i=>i.id!==idn))
+      setisvimodal3(false);
+
+    }
+    
    
     const seemore=(id)=>{
       setfullyviewitemwithid(id)
-      console.log("ok: "+id)
       setisvimodal2(true)
 
     }
@@ -106,6 +140,7 @@ export default function Timeline({Navigation}) {
      })
 
     },[isvimodal])
+    
 
        
       
@@ -129,6 +164,11 @@ export default function Timeline({Navigation}) {
         >
           <Fullinfoscreen onPress={()=>setisvimodal2(false)} id={fullyviewitemwithid}/>
         </Modal> 
+        <Modal isVisible={isvimodal3} 
+        style={{alignSelf:"center",margin:0}}
+        >
+          <Homnaymetvailon delete={()=>{deleteitem()}} notdelete={()=>setisvimodal3(false)}/>
+        </Modal> 
         
         {
           itemlist.length>0
@@ -138,7 +178,12 @@ export default function Timeline({Navigation}) {
           keyExtractor={item=>item.id}
           renderItem={({item})=>(
             <View key={item.id}>
-              <Ditmemetvaicac name={item.name} id={item.id} time={item.time} isdone={item.isdone} onPress={()=>{seemore(item.id)}}/>
+              <Ditmemetvaicac name={item.name} id={item.id} time={item.time} isdone={item.isdone} 
+              onPress={()=>{seemore(item.id)}}
+              onLongPress={()=>{concainit(item.id)}}
+              
+              
+              />
             </View>
           )
         }
@@ -147,10 +192,8 @@ export default function Timeline({Navigation}) {
           
    
         }
-        <ActionButton buttonColor="rgba(0,0,0,1)" autoInactive={false}>
-          <ActionButton.Item buttonColor='#3498db' title="Việc định kì" onPress={() => {setisvimodal1(true)}}>
-            <Icon name="loop" style={styles.actionButtonIcon} />
-          </ActionButton.Item>
+        <ActionButton buttonColor="rgba(0,0,0,1)" position="center">
+          
           <ActionButton.Item buttonColor='#3498db' title="Việc cần làm" onPress={() => {setisvimodal(true)}}>
             <Icon name="calendar-today" style={styles.actionButtonIcon} />
           </ActionButton.Item>

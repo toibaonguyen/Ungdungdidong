@@ -14,7 +14,7 @@ import ActionButton from 'react-native-action-button';
 //database right here
 
 import SQLite from 'react-native-sqlite-storage';
-var db=SQLite.openDatabase({name:"mainDB",location:"Library"},
+const db=SQLite.openDatabase({name:"mainDB",location:"Library"},
 ()=>{},
 (error)=>{console.log(error)})
 
@@ -34,38 +34,37 @@ export default function Fullinfoscreen(props) {
 
     
     const [stateww,setstateww]=useState({n:"",d:"",t:"",ti:"",l:[],p:"Không"});
-    var dk;
+    var dk,dk1;
     const [checkforfun,setcheckforfun]=useState(0)
+    const [ko,setko]=useState(props.id)
+    let nam
+        let des
+        let pri
+        let ta
+        let time
+        let arr=[];
+        let len
     
 
     
    
     useEffect(()=>{
-
         db.transaction(tx=>{
-          tx.executeSql("SELECT TASK.name as n1,description,priority,tag,endtime,miniTASK.name as n2 from TASK LEFT JOIN miniTASK on TASK.ID=miniTASK.idmaintask and ID=?",
-         [props.id],
+          tx.executeSql("SELECT name,description,priority,tag,endtime from TASK where ID=?",
+         [ko],
          (tx,results)=>{
             console.log("here")
 
-            let nam=results.rows.item(0).n1;
-            let des=results.rows.item(0).description;
-            let pri=results.rows.item(0).priority;
-            let ta=results.rows.item(0).tag;
-            let time=results.rows.item(0).endtime;
-            let arr=[];
-            let len=results.rows.length;
-            if(len>0&&results.rows.item(0).n2!=null)
-            {
-                for(let ketao=0;ketao<len;ketao++)
-                {
-                    arr.push(results.rows.item(ketao).n2);
-
-                }
-            }
+            nam=results.rows.item(0).name;
+            des=results.rows.item(0).description;
+            pri=results.rows.item(0).priority;
+            ta=results.rows.item(0).tag;
+            time=results.rows.item(0).endtime;
+            
+            
             setstateww({n:nam,d:des,t:ta,ti:time,l:arr,p:pri})
-            dk=stateww.t.length>0
-            console.log(props.id)
+          
+        
            
             
           
@@ -73,6 +72,30 @@ export default function Fullinfoscreen(props) {
          error=>{console.log(error)}
          )
        })
+       db.transaction(tx=>{
+        tx.executeSql("SELECT name from miniTASK where idmaintask=?",
+       [ko],
+       (tx,results)=>{
+          console.log("here")
+
+        
+          
+          len=results.rows.length;
+          if(len>0)
+          {
+              for(let ketao=0;ketao<len;ketao++)
+              {
+                  arr.push(results.rows.item(ketao).name);
+              }
+              setstateww({n:nam,d:des,t:ta,ti:time,l:arr,p:pri})
+          }
+          
+          dk=stateww.d.length>0
+          dk1=stateww.t.length>0
+       },
+       error=>{console.log(error)}
+       )
+     })
   
       },[])
       
@@ -87,10 +110,10 @@ export default function Fullinfoscreen(props) {
             <Text style={{fontSize:20,marginLeft:10}}>{stateww.n}</Text>
             <Text style={{marginLeft:10,marginTop:10}}>{stateww.p}</Text>
             <ScrollView style={{borderWidth:1,borderColor:"black",marginTop:5,marginLeft:10,marginRight:10,height:120}}>
-                <Text style={{margin:5}}>{stateww.d.length>0?stateww.d:"Không có mô tả chi tiết nào"}</Text>
+                <Text style={{margin:5}}>{ stateww.d.length>0 ? stateww.d : "Không có mô tả chi tiết nào"}</Text>
             </ScrollView>
             {
-            dk &&
+            stateww.t.length>0 &&
             <View style={{height:30,borderRadius:5,borderWidth:1,borderColor:"black",marginLeft:10,width:60}}>
                 <Text style={{alignSelf:"center"}}>{stateww.t}</Text>
             </View>

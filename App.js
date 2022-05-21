@@ -9,19 +9,18 @@ import * as React from 'react';
 const Stack = createNativeStackNavigator();
 
 import SQLite from 'react-native-sqlite-storage';
-var db=SQLite.openDatabase({name:"mainDB",location:"Library"},
+const db=SQLite.openDatabase({name:"mainDB",location:"Library"},
 ()=>{},
 (error)=>{console.log(error)})
 
 export default function App() {
   useEffect(()=>{
     createdb()
-
-  },)
+  },[])
 
   function createdb(){
     db.transaction( tx=>{
-      tx.executeSql("CREATE TABLE IF NOT EXISTS FORM(id	INTEGER,name	TEXT NOT NULL,PRIMARY KEY(id AUTOINCREMENT))"
+      tx.executeSql("CREATE TABLE IF NOT EXISTS FORM (id	INTEGER,name TEXT NOT NULL,PRIMARY KEY(id AUTOINCREMENT))"
      )})
      db.transaction( tx=>{
       tx.executeSql("CREATE TABLE IF NOT EXISTS TAG (tagname TEXT NOT NULL)"
@@ -39,7 +38,7 @@ export default function App() {
       tx.executeSql("CREATE TABLE IF NOT EXISTS miniTASK (idmaintask INTEGER NOT NULL,name TEXT NOT NULL,FOREIGN KEY(idmaintask) REFERENCES TASK(ID))"
      )})
      db.transaction( tx=>{
-      tx.executeSql("miniTaskwithform(idform INTEGER NOT NULL,name TEXT NOT NULL,FOREIGN KEY(idform) REFERENCES FORM(id))"
+      tx.executeSql("miniTaskwithform (idform INTEGER NOT NULL,name TEXT NOT NULL,FOREIGN KEY(idform) REFERENCES FORM(id))"
      )})
   }
 
