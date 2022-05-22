@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, View,TouchableOpacity,Dimensions,ScrollView,StyleSheet } from 'react-native';
+import { Text, View,TouchableOpacity,Dimensions,ScrollView,StyleSheet,Image } from 'react-native';
 import Modal from "react-native-modal";
 import ActionButton from 'react-native-action-button';
 import Addtodo1 from './ActionScreens/Addtodo1';
@@ -112,8 +112,24 @@ export default function Table({Navigation}) {
 
     return(
      <View style={{flex:1}}>
-         
-     <ScrollView style={{flex:1}}>
+       <Modal isVisible={isvimodal2} 
+        style={{alignSelf:"center",margin:0}}
+        >
+          <Fullinfoscreen1 onPress={()=>setisvimodal2(false)} id={qq}/>
+    </Modal> 
+    <Modal isVisible={isvimodal1} 
+        style={{alignSelf:"center",margin:0}}
+        >
+          <Addtodo1 onPress={()=>setisvimodal1(false)}/>
+    </Modal> 
+    <Modal isVisible={isvimodal3} 
+        style={{alignSelf:"center",margin:0}}
+        >
+          <Homnaymetvailon delete={()=>{deleteitem()}} notdelete={()=>setisvimodal3(false)}/>
+    </Modal>
+      {
+        list.length>0?
+      (<ScrollView style={{flex:1}}>
          {
             list.map(i=>(
             <TouchableOpacity style={{borderRadius:10,width:Dimensions.get("window").width-10,backgroundColor:randomco(),marginTop:5,alignSelf:"center"}} 
@@ -147,28 +163,24 @@ export default function Table({Navigation}) {
         
 
      </ScrollView>
-     <Modal isVisible={isvimodal2} 
-        style={{alignSelf:"center",margin:0}}
-        >
-          <Fullinfoscreen1 onPress={()=>setisvimodal2(false)} id={qq}/>
-    </Modal> 
-    <Modal isVisible={isvimodal1} 
-        style={{alignSelf:"center",margin:0}}
-        >
-          <Addtodo1 onPress={()=>setisvimodal1(false)}/>
-    </Modal> 
-    <Modal isVisible={isvimodal3} 
-        style={{alignSelf:"center",margin:0}}
-        >
-          <Homnaymetvailon delete={()=>{deleteitem()}} notdelete={()=>setisvimodal3(false)}/>
-        </Modal> 
+      )
+        :
+        (<View style={{alignItems:"center",justifyContent:"center",flex:1}}>
+        <Image source={require('../images/calendar.png')}
+        style={{
+          width: 150,
+          height: 150,
+      }}/>
+      <Text>Hiện không có sự kiện nào cần quan tâm.</Text>
 
-
+      </View>)
+}
     <ActionButton buttonColor="rgba(0,0,0,1)" position="center">
       <ActionButton.Item buttonColor='#3498db' title="Bảng sự kiện" onPress={() => {setisvimodal1(true)}}>
         <Icon name="loop" style={styles.actionButtonIcon} />
       </ActionButton.Item>
     </ActionButton>
+
    
      </View>
     

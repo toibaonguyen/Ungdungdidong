@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { Text, View,StyleSheet,Dimensions,ScrollView,FlatList,Button,TouchableOpacity} from 'react-native';
+import { Text, View,StyleSheet,Dimensions,ScrollView,FlatList,Button,TouchableOpacity,Image} from 'react-native';
 
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/MaterialIcons'
@@ -88,9 +88,12 @@ export default function Timeline({Navigation}) {
            
            for(let i=0;i<len;i++)
            {
-             
+             let now=new Date();
+             let timetocompare=new Date(results.rows.item(i).endtime)
+             if(now.getTime()<=timetocompare.getTime())
+             {
              newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
-           
+             }
            }
            setitemlist(newarrqq);
            console.log(itemlist);
@@ -121,9 +124,12 @@ export default function Timeline({Navigation}) {
            
            for(let i=0;i<len;i++)
            {
-             
+            let now=new Date();
+            let timetocompare=new Date(results.rows.item(i).endtime)
+            if(now.getTime()<=timetocompare.getTime())
+            {
              newarrqq.push({id: results.rows.item(i).ID,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
-           
+            }
            }
            setitemlist(newarrqq);
            console.log(itemlist);
@@ -187,7 +193,15 @@ export default function Timeline({Navigation}) {
             </View>
           )
         }
-          />:<Text style={{alignSelf:"center"}}>Không có việc cần làm</Text>
+          />:<View style={{alignItems:"center",justifyContent:"center",flex:1}}>
+            <Image source={require('../images/reading.png')}
+            style={{
+              width: 150,
+              height: 150,
+          }}/>
+          <Text>Không có công việc nào cần làm!</Text>
+
+          </View>
          
           
    
