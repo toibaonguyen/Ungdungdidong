@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, View, Image, TouchableOpacity, TextInput } from 'react-native';
+import { Text, View, Image, TouchableOpacity, TextInput, FlatList } from 'react-native';
 import { useState, useEffect } from 'react/cjs/react.development';
 import ButtonUI from '../Navigation tabs/ActionScreens/Custom/UIbutton';
 import { NavigationContainer } from '@react-navigation/native';
@@ -12,9 +12,10 @@ import Addtodo from './ActionScreens/Addtodo';
 
 
 import SQLite from 'react-native-sqlite-storage';
-var db=SQLite.openDatabase({name:"mainDB",location:"Library"},
-()=>{console.log("vcasdasdasdfwvdagv")},
-(error)=>{alert(error)})
+import KeyboardAvoidingView from 'react-native/Libraries/Components/Keyboard/KeyboardAvoidingView';
+var db = SQLite.openDatabase({ name: "mainDB", location: "Library" },
+    () => { console.log("vcasdasdasdfwvdagv") },
+    (error) => { alert(error) })
 
 
 
@@ -26,18 +27,95 @@ export default function Workplace() {
     const [modalVisible3, setmodalVisible3] = useState(false);
     const [modalVisible4, setmodalVisible4] = useState(false);
     const [modalVisible5, setmodalVisible5] = useState(false);
-    const [modalDailyVisible, setmodalDailyVisible] = useState(false);
+    const [modalAddTag, setmodalAddTag] = useState(false);
     const [modalDailyVisible1, setmodalDailyVisible1] = useState(false);
+    const[count,Setcount]=useState()
+    const [tag, setTag] = useState("")
+    const [tags, setTags] = useState([])
+    const addTag = () => {
+        if (!tag) {
+            console.log('1')
+            return false;
+        }
 
-function successToOpenDB()
-{
-db.transaction(tx=>{
-    tx.executeSql('SELECT * FROM USERS',[],(tx,results)=>{
-        let dataLength=results.rows.length;
-        alert(dataLength);
-    })
-})
-}
+        db.transaction(txn => {
+            txn.executeSql('INSERT INTO TAG (tagname) VALUES (?)', [tag],
+                () => {
+                    console.log(tag + ' tag đã thêm')
+                    getTag()
+                    setTag("")
+                    setmodalAddTag(!modalAddTag)
+                }
+
+                , () => { alert('chưa thêm được') })
+        })
+    }
+    
+    const getTag = () => {
+        db.transaction(txn => {
+            txn.executeSql(
+                'SELECT * FROM tag',
+                [],
+                (txn, res) => {
+                    console.log('lay du lieu thanh cong')
+                    let len = res.rows.length;
+                    if (len > 0) {
+                        let results = [];
+                        for (let i = 0; i < len; i++) {
+                            let item = res.rows.item(i);
+                            results.push({ tagname: item.tagname })
+                            console.log(results.length)
+                        }
+                        Setcount(results.length)
+                setTags(results)
+
+
+                    }
+                },
+                error => { console.log('loi khong lay duoc du lieu') }
+            )
+        })
+    }
+
+    useEffect(async () => {
+        await getTag()
+    }, [])
+
+
+    function deleteTag(tagname){
+        db.transaction(tx=>{
+            tx.executeSql('DELETE FROM TAG WHERE tagname=?',[tagname],
+            ()=>{console.log('xoa that bai')},
+            error=>{console.log('xoa thanh cong')})
+        }
+
+        )
+        setTags(tags.filter(i=>i.tagname!==tagname))
+    }
+
+
+
+    const renderTag = ({ item }) => {
+        return (
+            <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: "#ddd" ,flexDirection:"row"}}>
+                <View style={{flex:90}}>
+                <Text>{item.tagname}</Text>
+                </View>
+                <View>
+                    <TouchableOpacity onPress={()=>{deleteTag(item.tagname)
+                          
+                    }}>
+                        <Image source={require("../images/icons/delete.png")} style={{ height: 20, width: 20 }}>
+
+                         </Image>
+                    </TouchableOpacity>
+                    
+                </View>
+                
+            </View>
+        )
+    }
+
     return (
         <View style={{ flex: 1 }}>
 
@@ -58,7 +136,7 @@ db.transaction(tx=>{
                 }}>
                 <View>
                     <TouchableOpacity onPress={() => setmodalVisible3(!modalVisible3)}>
-                        <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60 ,tintColor:'black'}}>
+                        <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60, }}>
 
                         </Image>
                     </TouchableOpacity>
@@ -99,28 +177,38 @@ db.transaction(tx=>{
                     Alert.alert("Modal has been closed.");
                     setmodalVisible4(!modalVisible4);
                 }}>
-                <View style={{ flex: 1 }}>
-                    <View style={{ flex: 15, alignItems: 'center', justifyContent: 'center' }}>
-                        <View style={{ borderWidth: 1, borderColor: '#777', width: '95%', height: 40, flexDirection: 'row' }}>
-                            <View style={{ flex: 10, justifyContent: 'center', alignItems: 'center' }}>
-                                <Image source={require('../images/icons/find.png')}
-                                    style={{
-                                        width: '70%',
-                                        height: '70%',
-                                    }}>
 
-                                </Image>
-                            </View>
-                            <View style={{ flex: 90 }}>
-                                <TextInput style={{ flex: 1 }}>
+                <View style={{ flex: 15, alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ borderWidth: 1, borderColor: '#777', width: '95%', height: 40, flexDirection: 'row' }}>
+                        <View style={{ flex: 10, justifyContent: 'center', alignItems: 'center' }}>
+                            <Image source={require('../images/icons/find.png')}
+                                style={{
+                                    width: '70%',
+                                    height: '70%',
+                                }}>
 
-                                </TextInput>
-                            </View>
+                            </Image>
+
                         </View>
-                    </View >
-                    <View style={{ flex: 10 }}>
+                        <View style={{ flex: 90 }}>
+                            <TextInput placeholder='Tên thẻ' style={{ flex: 1 }}>
 
+                            </TextInput>
+                            
+                           
+                        </View>
                     </View>
+                </View >
+                <View style={{ flex: 70 }}>
+              {
+                  count>0?
+                  ( (  <FlatList
+                    data={tags}
+                    renderItem={renderTag}
+                    key={cat => cat.id}
+                />))
+                 :
+                 (<View style={{flex:1}}>
                     <View style={{
                         flex: 30, justifyContent: 'center',
                         alignItems: 'center'
@@ -144,6 +232,7 @@ db.transaction(tx=>{
                             cái không?
                         </Text>
                         <Text />
+                        
                         <TouchableOpacity style={{
                             backgroundColor: 'black',
                             height: 40,
@@ -151,43 +240,97 @@ db.transaction(tx=>{
                             justifyContent: 'center',
                             alignItems: 'center',
                             borderRadius: 8
-                        }}>
+                        }} onPress={() => setmodalAddTag(true)}>
                             <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
                                 Tạo thẻ
                             </Text>
 
                         </TouchableOpacity>
                     </View>
-                    <View style={{ flex: 25, flexDirection: 'row' }}>
-                        <View style={{ flex: 105 }}>
-                            <TouchableOpacity onPress={() => setmodalVisible4(!modalVisible4)}>
-                                <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60 }}>
-
-                                </Image>
-                            </TouchableOpacity>
-
-                        </View>
-                        <View style={{ flex: 20, flexDirection: "row" }}>
-
-                            <TouchableOpacity style={{
-                                backgroundColor: 'black',
-                                height: 60,
-                                width: 60,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderRadius: 100
+                </View>
+                )
+                
+              }
+                </View>
+                <Modal animationType="slide"
+                            transparent={false}
+                            visible={modalAddTag}
+                            onRequestClose={() => {
+                                Alert.alert("Modal has been closed.");
+                                setmodalAddTag(!modalAddTag);
                             }}>
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 45,
-                                }}>
-                                    +
-                                </Text>
-                            </TouchableOpacity>
+
+                            <View style={{ flex: 15, alignItems: 'center', justifyContent: 'center' }}>
+                                <View style={{ borderWidth: 1, borderColor: '#777', width: '95%', height: 40, flexDirection: 'row' }}>
+                                    <View style={{ flex: 10, justifyContent: 'center', alignItems: 'center' }}>
+                                        <Image source={require('../images/icons/add.png')}
+                                            style={{
+                                                width: '70%',
+                                                height: '70%',
+                                            }}>
+                                        </Image>
+                                    </View>
+                                    <View style={{ flex: 90 }}>
+                                        <TextInput placeholder='Nhập tên thẻ' style={{ flex: 1 }} value={tag} onChangeText={setTag}>
+
+                                        </TextInput>
+                                    </View>
+                                </View>
+                            </View >
+                            <View style={{ flex: 30, flexDirection: 'row' }}>
+                                <View style={{ flex: 100 }} />
+                                <View style={{ flex: 20 }}>
+                                    <TouchableOpacity onPress={addTag}>
+                                        <Image source={require('../images/icons/addbut.png')}
+                                            style={{
+                                                width: 50, height: 50
+                                            }}>
+                                        </Image>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                            </View>
+
+                            <View style={{
+                                flex: 30, justifyContent: 'center',
+                                alignItems: 'center'
+                            }}>
+                            </View>
 
 
 
-                        </View>
+                        </Modal>
+
+                <View style={{ flex: 15, flexDirection: 'row' }}>
+                    <View style={{ flex: 20 }}>
+                        <TouchableOpacity onPress={() => setmodalVisible4(!modalVisible4)}>
+                            <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60 }}>
+
+                            </Image>
+                        </TouchableOpacity>
+
+                    </View>
+                    <View style={{ flex: 80 }} ></View>
+                    <View style={{ flex: 20, flexDirection: "row" }}>
+
+                        <TouchableOpacity style={{
+                            backgroundColor: 'black',
+                            height: 60,
+                            width: 60,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderRadius: 100
+                        }} onPress={() =>{setmodalAddTag(true)}}>
+                            <Text style={{
+                                color: 'white',
+                                fontSize: 45,
+                            }}>
+                                +
+                            </Text>
+                        </TouchableOpacity>
+
+
 
                     </View>
 
