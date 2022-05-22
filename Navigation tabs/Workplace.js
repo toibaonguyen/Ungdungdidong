@@ -8,6 +8,17 @@ import App from '../App';
 import Modal from "react-native-modal";
 import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
 import Addtodo from './ActionScreens/Addtodo';
+
+
+
+import SQLite from 'react-native-sqlite-storage';
+var db=SQLite.openDatabase({name:"mainDB",location:"Library"},
+()=>{console.log("vcasdasdasdfwvdagv")},
+(error)=>{alert(error)})
+
+
+
+
 export default function Workplace() {
     const [modalVisible, setmodalVisible] = useState(false);
     const [modalVisible1, setmodalVisible1] = useState(false);
@@ -17,6 +28,16 @@ export default function Workplace() {
     const [modalVisible5, setmodalVisible5] = useState(false);
     const [modalDailyVisible, setmodalDailyVisible] = useState(false);
     const [modalDailyVisible1, setmodalDailyVisible1] = useState(false);
+
+function successToOpenDB()
+{
+db.transaction(tx=>{
+    tx.executeSql('SELECT * FROM USERS',[],(tx,results)=>{
+        let dataLength=results.rows.length;
+        alert(dataLength);
+    })
+})
+}
     return (
         <View style={{ flex: 1 }}>
 
@@ -25,450 +46,6 @@ export default function Workplace() {
                 <Text style={{ color: 'black', marginStart: 20, marginTop: 10, fontWeight: 'bold', fontSize: 16 }}>
                     Nhiệm vụ đã hoàn thành
                 </Text>
-            </TouchableOpacity>
-            <Modal animationType="slide"
-                transparent={false}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
-                    setmodalVisible(!modalVisible);
-                }}>
-                <View style={{ flex: 1 }}>
-                    <View style={{ flex: 30 }}>
-                        <TouchableOpacity onPress={() => setmodalVisible(!modalVisible)}>
-                            <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60 }}>
-
-                            </Image>
-                        </TouchableOpacity>
-                    </View >
-
-                    <View style={{
-                        flex: 30, justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        <Image source={require('../images/Daily.png')}
-                            style={{
-                                width: 200,
-                                height: 200,
-                            }}>
-
-                        </Image>
-                    </View>
-                    <View style={{
-                        flex: 30,
-                        alignItems: 'center'
-                    }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'black', marginTop: 10 }}>
-                            Chưa có thẻ nào. Bạn có muốn tạo một
-                        </Text>
-                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'black' }}>
-                            cái không?
-                        </Text>
-                        <Text>
-                            Cải thiện năng suất của bạn với các việc lặp lại
-                        </Text>
-                        <Text>
-                            định kỳ. Ví dụ như tự động tạo các việc diễn ra
-                        </Text>
-                        <Text>
-                            hằng tuần hoặc hằng tháng
-                        </Text>
-                        <Text />
-
-                        <Modal animationType="slide"
-                            transparent={false}
-                            visible={modalDailyVisible}
-                            onRequestClose={() => {
-                                Alert.alert("Modal has been closed.");
-                                setmodalDailyVisible(!modalDailyVisible);
-                            }}>
-                            <View style={{ flex: 1 }}>
-                                <View style={{ flex: 25 ,alignItems:'center'}}>
-                                    <Image source={require("../images/icons/ques.png")} style={{height:50,width:50}}>
-
-                                    </Image>
-                                       <Text style={{fontWeight:"bold", fontSize:24}}>
-                                           Làm thế nào để nó hoạt động
-                                       </Text>
-                                </View>
-
-                                <View style={{
-                                    flex: 50,
-                                }}>
-                                    <View style={{ flexDirection: 'row' }}>
-                                        <View style={{flex:5,alignItems:'center',justifyContent:'center'}}>
-                                               <Image source={require("../images/icons/dot.png")} style={{ height:10,width:10,tintColor:'blue',marginRight:20}}>
-
-                                               </Image>
-                                        </View>
-                                        <View style={{ flex: 95 }}>
-                                            <Text style={{ color: 'black', fontSize: 20 }}>
-                                                Việc cần làm định kỳ sẽ được thêm vào
-                                            </Text>
-                                            <Text style={{ color: 'black', fontSize: 20 }}>
-                                                dòng thời gian trong 30 ngày tới
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View style={{ flexDirection: 'row',marginTop:8 }}>
-                                        <View style={{flex:5,alignItems:'center',justifyContent:'center'}}>
-                                               <Image source={require("../images/icons/dot.png")} style={{ height:10,width:10,tintColor:'blue',marginRight:20}}>
-
-                                               </Image>
-                                        </View>
-                                        <View style={{ flex: 95 }}>
-                                            <Text style={{ color: 'black', fontSize: 20 }}>
-                                                Các việc định kỳ mới sẽ được tạo tự
-                                            </Text>
-                                            <Text style={{ color: 'black', fontSize: 20 }}>
-                                                động.
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View style={{ flexDirection: 'row',marginTop:8 }}>
-                                        <View style={{flex:5,alignItems:'center',justifyContent:'center'}}>
-                                               <Image source={require("../images/icons/dot.png")} style={{ height:10,width:10,tintColor:'blue',marginRight:20}}>
-
-                                               </Image>
-                                        </View>
-                                        <View style={{ flex: 95 }}>
-                                            <Text style={{ color: 'black', fontSize: 20 }}>
-                                                Chỉ các việc trong tương lai mới được
-                                            </Text>
-                                            <Text style={{ color: 'black', fontSize: 20 }}>
-                                                cập nhật khi bạn thay đổi việc định kỳ.
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View style={{ flexDirection: 'row',marginTop:8 }}>
-                                        <View style={{flex:5,alignItems:'center',justifyContent:'center'}}>
-                                               <Image source={require("../images/icons/dot.png")} style={{ height:10,width:10,tintColor:'blue',marginRight:20}}>
-
-                                               </Image>
-                                        </View>
-                                        <View style={{ flex: 95 }}>
-                                            <Text style={{ color: 'black', fontSize: 20 }}>
-                                                Các việc định kỳ được sửa riêng lẻ sẽ
-                                            </Text>
-                                            <Text style={{ color: 'black', fontSize: 20 }}>
-                                                không được cập nhật hay bị xoá
-                                            </Text>
-                                        </View>
-                                    </View>
-
-
-                                </View>
-
-                                
-
-                                <View style={{ flex: 25, alignItems:'center' }}>
-                                    <TouchableOpacity onPress={() => setmodalDailyVisible(!modalDailyVisible)} style={{
-                                             backgroundColor:'black',
-                                             height:40,
-                                             width:80,
-                                             alignItems:'center',
-                                             justifyContent:'center',
-                                             borderRadius:5
-                                    }}>
-                                        <Text style={{color:'white',fontWeight:'bold',fontSize:20}}>Đã hiểu</Text>
-                                    </TouchableOpacity>
-                                </View>
-
-                            </View>
-                        </Modal>
-                        <TouchableOpacity style={{
-                            backgroundColor: 'black',
-                            height: 40,
-                            width: 150,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            borderRadius: 8
-                        }} onPress={() => setmodalDailyVisible(true)}>
-                            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
-                                Thông tin thêm
-                            </Text>
-
-                        </TouchableOpacity>
-                    </View>
-                    <Modal animationType="slide"
-                        transparent={false}
-                        visible={modalDailyVisible1}
-                        onRequestClose={() => {
-                            Alert.alert("Modal has been closed.");
-                            setmodalDailyVisible1(!modalDailyVisible1);
-                        }}>
-                        <View style={{ flex: 1 }}>
-                            <View style={{ flex: 25 }}>
-                                <TouchableOpacity onPress={() => setmodalDailyVisible1(!modalDailyVisible1)}>
-                                    <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60 }}>
-
-                                    </Image>
-                                </TouchableOpacity>
-                            </View>
-
-                            <View style={{
-                                flex: 75,
-                            }}>
-                               <Text> chờ được gắn :)))</Text>
-                            </View>
-                        </View>
-
-                    </Modal>
-                    <View style={{ flex: 25, flexDirection: 'row' }}>
-                        <View style={{ flex: 105 }}>
-
-                        </View>
-                        <View style={{ flex: 20 }}>
-                            
-                            <TouchableOpacity style={{
-                                backgroundColor: 'black',
-                                height: 60,
-                                width: 60,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderRadius: 100,
-                                marginTop: 40
-                            }} onPress={() => setmodalDailyVisible1(true)}>
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 45,
-                                }}>
-                                    +
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
-                    </View>
-
-                </View>
-            </Modal>
-            <TouchableOpacity style={{
-                borderColor: '#a9a9a9',
-                borderWidth: 1,
-                height: 60,
-                justifyContent: 'center',
-            }} onPress={() => setmodalVisible(true)}>
-                <Image source={require('../images/icons/daily.png'
-                )} style={{
-                    width: 30, height: 30,
-                    position: 'absolute', left: 10, top: 15
-
-                }}>
-
-                </Image>
-                <Text style={{
-                    color: 'black',
-                    fontSize: 14,
-                    fontWeight: 'bold',
-                    marginStart: 50,
-                }}>
-                    Việc định kỳ
-                </Text>
-            </TouchableOpacity>
-
-            <Modal animationType="slide"
-                transparent={false}
-                visible={modalVisible1}
-                onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
-                    setmodalVisible1(!modalVisible1);
-                }}>
-                <View style={{ flex: 1 }}>
-                    <View style={{ flex: 30 }}>
-                        <TouchableOpacity onPress={() => setmodalVisible1(!modalVisible1)}>
-                            <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60 }}>
-
-                            </Image>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={{
-                        flex: 30,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        <Image source={require('../images/Alert.png')}
-                            style={{
-                                width: 200,
-                                height: 200,
-                            }}
-                        >
-
-                        </Image>
-                    </View>
-
-                    <View style={{
-                        flex: 20,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 15, color: 'black' }}>
-                            Nhận thông báo đẩy cho các sự kiện
-                        </Text>
-
-                        <Text style={{ fontWeight: 'bold', fontSize: 15, color: 'black' }}>
-                            quan trọng và có tính lặp lại. Hãy tạo
-                        </Text>
-                        <Text style={{ fontWeight: 'bold', fontSize: 15, color: 'black' }}>
-                            các nhắc nhở hẳng ngày, hằng tuần và
-                        </Text>
-                        <Text style={{ fontWeight: 'bold', fontSize: 15, color: 'black' }}>
-                            hằng tháng.
-                        </Text>
-                    </View>
-
-                    <View style={{ flex: 30, flexDirection: 'row' }}>
-                        <View style={{ flex: 105 }}>
-
-                        </View>
-                        <View style={{ flex: 20 }}>
-                            <TouchableOpacity style={{
-                                backgroundColor: 'black',
-                                height: 60,
-                                width: 60,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderRadius: 100, marginTop: 20
-                            }}>
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 45,
-                                }}>
-                                    +
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
-                    </View>
-
-                </View>
-
-            </Modal>
-            <TouchableOpacity style={{
-                borderColor: '#a9a9a9',
-                borderWidth: 1,
-                height: 60,
-                justifyContent: 'center',
-            }} onPress={() => setmodalVisible1(true)}>
-                <Text style={{
-                    color: 'black',
-                    fontSize: 14,
-                    fontWeight: 'bold',
-                    marginStart: 50,
-                }}>
-                    Nhắc nhở
-                </Text>
-                <Image source={require('../images/icons/alert.png'
-                )} style={{
-                    width: 30, height: 30,
-                    position: 'absolute', left: 10, top: 15
-
-                }} >
-
-                </Image>
-            </TouchableOpacity>
-
-            <Modal animationType="slide"
-                transparent={false}
-                visible={modalVisible2}
-                onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
-                    setmodalVisible2(!modalVisible2);
-                }}>
-                <View style={{ flex: 1 }}>
-                    <View style={{ flex: 25 }}>
-                        <TouchableOpacity onPress={() => setmodalVisible2(!modalVisible2)}>
-                            <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60 }}>
-
-                            </Image>
-                        </TouchableOpacity>
-
-                    </View>
-
-                    <View style={{
-                        flex: 30,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        <Image source={require('../images/Note.png')}
-                            style={{
-                                width: 200,
-                                height: 200,
-                            }}
-                        >
-
-                        </Image>
-                    </View>
-
-                    <View style={{
-                        flex: 20,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 15, color: 'black' }}>
-                            Không có ghi chú nào
-                        </Text>
-
-                        <Text style={{ marginTop: 10 }}>
-                            Ghi chú không kèm ngày tháng nào
-                        </Text>
-                        <Text>
-                            sẽ được hiện ở đây
-                        </Text>
-                    </View>
-
-                    <View style={{ flex: 25, flexDirection: 'row' }}>
-                        <View style={{ flex: 105 }}>
-
-                        </View>
-                        <View style={{ flex: 20 }}>
-                            <TouchableOpacity style={{
-                                backgroundColor: 'black',
-                                height: 60,
-                                width: 60,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderRadius: 100
-                            }}>
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 45,
-                                }}>
-                                    +
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
-                    </View>
-
-                </View>
-
-            </Modal>
-            <TouchableOpacity style={{
-                borderColor: '#a9a9a9',
-                borderWidth: 1,
-                height: 60,
-                justifyContent: 'center',
-            }} onPress={() => setmodalVisible2(true)}>
-                <Text style={{
-                    color: 'black',
-                    fontSize: 14,
-                    fontWeight: 'bold',
-                    marginStart: 50,
-                }}>
-                    Ghi chú
-                </Text>
-                <Image source={require('../images/icons/note.png'
-                )} style={{
-                    width: 30, height: 30,
-                    position: 'absolute', left: 10, top: 15
-
-                }}>
-
-                </Image>
             </TouchableOpacity>
 
 
@@ -481,7 +58,7 @@ export default function Workplace() {
                 }}>
                 <View>
                     <TouchableOpacity onPress={() => setmodalVisible3(!modalVisible3)}>
-                        <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60 }}>
+                        <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60 ,tintColor:'black'}}>
 
                         </Image>
                     </TouchableOpacity>
