@@ -21,6 +21,8 @@ target 'Ungdungdidong_App' do
 
   pod 'react-native-sqlite-storage', :path => '../node_modules/react-native-sqlite-storage'
 
+  pod 'RNSVG', :path => '../node_modules/react-native-svg'
+
   target 'Ungdungdidong_AppTests' do
     inherit! :complete
     # Pods for testing
