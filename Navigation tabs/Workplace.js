@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, View, Image, TouchableOpacity, TextInput, FlatList,Dimensions } from 'react-native';
+import { Text, View, Image, TouchableOpacity,Button, TextInput, FlatList,Dimensions ,StyleSheet} from 'react-native';
 import { useState, useEffect } from 'react/cjs/react.development';
 import ButtonUI from '../Navigation tabs/ActionScreens/Custom/UIbutton';
 import { NavigationContainer } from '@react-navigation/native';
@@ -8,7 +8,8 @@ import App from '../App';
 import Modal from "react-native-modal";
 import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
 import Addtodo from './ActionScreens/Addtodo';
-
+import ActionButton from 'react-native-action-button';
+import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import {
     LineChart,
@@ -54,12 +55,12 @@ export default function Workplace() {
     const [count2, Setcount2] = useState()
     const [minitask, setminitask] = useState("")
     const [minitasks, setminitasks] = useState([])
-    const [id, setid] = useState("")
+    const [id, setid] = useState(0)
     const [ID, setID] = useState("")
 
-
-
-
+    const [mainstate,setmainstate]=useState({list:[]})
+ const [itemtodolist,setitemtodolist]=useState("");
+ const [keynum, setkeynum] = useState(0);
     const addTag = () => {
         if (!tag) {
             console.log('1')
@@ -104,7 +105,67 @@ export default function Workplace() {
             )
         })
     }
+    
+    async function savedt(){
+        SQLite.enablePromise(true)
+        let meme=[];
+        let num;
 
+        let leng=mainstate.list.length;
+        
+        await db.transaction(async(tx)=>{
+            await tx.executeSql("select max(id) as maxid from FORM",
+            [],
+            (tx,results)=>{num=results.rows.item(0).maxid+1;
+            {console.log("maxid:"+ num);}},
+            error=>{alert("lỗi r ông cháu ơi")}
+            )    
+        })
+        
+       
+        if(leng>0)
+        {
+            let vq="insert into miniTaskwithform VALUES "
+            for(let i=0;i<leng;i++)
+            {
+              meme.push(num,mainstate.list[i].value);
+              vq+='(?,?)';
+              if(i!=leng-1)
+              {
+                vq+=','
+              }
+            }
+            console.log(meme);
+            db.transaction(
+                async(tx)=>{
+                    await tx.executeSql(vq,
+                    meme,
+                    (tx,results)=>{console.log("Chèn minitask thành công")},
+                    error=>{console.log(error)}
+                    )
+                })
+
+        }
+       
+    }
+
+
+
+     
+    function giveID()
+    {
+        db.transaction(txn =>{
+        txn.executeSql(
+            "SELECT * FROM FORM"),
+            [],
+            (txn, ress) => {
+                console.log('lay id duoc ne',id)
+                let len = ress.rows.length;
+                setid(len + 1)
+            }, error => { console.log('lay id ko dc') }
+        })
+         return id;
+    }
     const getminitask = (ID) => {
         db.transaction(txn => {
 
@@ -113,7 +174,7 @@ export default function Workplace() {
                 "SELECT * FROM miniTASK where idmaintask='?'",
                 [ID],
                 (txn, res) => {
-                    console.log('lay du lieu thanh cong from')
+                    console.log('lay du lieu thanh cong form')
                     let len = res.rows.length;
                     if (len > 0) {
                         let results = [];
@@ -141,17 +202,10 @@ export default function Workplace() {
 
         db.transaction(txn => {
 
-            txn.executeSql(
-                "SELECT * FROM FORM"),
-                [],
-                (txn, ress) => {
-                    console.log('lay id duoc ne')
-                    let len = ress.rows.length;
-                    setid(len + 1)
-                }, error => { console.log('lay id ko dc') }
             txn.executeSql('INSERT INTO miniTASK (idmaintask,name) VALUES (?,?)', [id, minitask],
                 () => {
-                    console.log(id)
+                    console.log(id,minitask)
+                    
                     setID(id)
                     getminitask(id)
                     setminitask("")
@@ -162,7 +216,13 @@ export default function Workplace() {
         })
     }
 
+    const deleteItem = (id) => {
 
+        setmainstate({...mainstate,
+         list: mainstate.list.filter(item => item.key !== id)
+        })
+     
+     }
 
 
     useEffect(async () => {
@@ -180,6 +240,7 @@ export default function Workplace() {
         await getOct()
         await getNov()
         await getDec()
+        
         
     }, [])
 
@@ -256,30 +317,30 @@ export default function Workplace() {
 
     const getJan = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-    
-              const len = results.rows.length;
-              if (len > 0) {
-    
+            tx.executeSql("select * from TASK where completed='0'",
+              [],
+              (tx, results) => {
+      
+                const len = results.rows.length;
                 let newarrqq = [];
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=1)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
-                    }
+                if (len > 0) {
+      
+                  
+                  for (let i = 0; i < len; i++) {
+               
+                      let timetocompare=new Date(results.rows.item(i).endtime)
+                    
+                      if(timetocompare.getMonth()==0)
+                      {
+                      newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+                      }
+                  }
+                  setJan(newarrqq.length)                
                 }
-                setJan(newarrqq.length) 
-                console.log(Jan)
-                
-              }
-            },
-            error => { console.log(error) }
-          )
-        })
+              },
+              error => { console.log(error) }
+            )
+          })
     
       }
 
@@ -289,14 +350,14 @@ export default function Workplace() {
             [],
             (tx, results) => {
     
-              const len = results.rows.length;
+              const len = results.rows.length; let newarrqq1 = [];
               if (len > 0) {
     
-                let newarrqq1 = [];
+               
                 for (let i = 0; i < len; i++) {
-                    let now=new Date();
+  
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=2)
+                    if(timetocompare.getMonth()==1)
                     {
                     newarrqq1.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -314,15 +375,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+               
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=3)
+                    if(timetocompare.getMonth()==2)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -340,15 +401,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+               
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=4)
+                    if(timetocompare.getMonth()==3)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -366,15 +427,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+                
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=5)
+                    if(timetocompare.getMonth()==4)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -392,15 +453,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+                
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=6)
+                    if(timetocompare.getMonth()==5)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -418,15 +479,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+               
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=7)
+                    if(timetocompare.getMonth()==6)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -444,15 +505,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+               
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=8)
+                    if(timetocompare.getMonth()==7)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -470,15 +531,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+               
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=9)
+                    if(timetocompare.getMonth()==8)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -496,15 +557,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+                
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=10)
+                    if(timetocompare.getMonth==9)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -522,15 +583,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+               
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=11)
+                    if(timetocompare.getMonth()==10)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -548,15 +609,15 @@ export default function Workplace() {
           tx.executeSql("select * from TASK where completed='1'",
             [],
             (tx, results) => {
-    
+                let newarrqq = [];
               const len = results.rows.length;
               if (len > 0) {
     
-                let newarrqq = [];
+                
                 for (let i = 0; i < len; i++) {
                     let now=new Date();
                     let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth=12)
+                    if(timetocompare.getMonth()==11)
                     {
                     newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
                     }
@@ -574,7 +635,7 @@ export default function Workplace() {
 
 
             <View style={{ height: 300, borderWidth: 1, borderColor: '#a9a9a9', borderRadius: 5, marginHorizontal: 5, marginVertical: 10 }}>
-                <Text style={{ color: 'black', marginStart: 20, marginTop: 10, fontWeight: 'bold', fontSize: 16 }}>
+                <Text style={{ color: 'black', marginStart: 20, marginTop: 10, fontWeight: 'bold', fontSize: 16 }} >
                     Nhiệm vụ đã hoàn thành
                 </Text>
                 <View>
@@ -698,67 +759,49 @@ export default function Workplace() {
                     Alert.alert("Modal has been closed.");
                     setaddSample(!addSample);
                 }}>
-                <View style={{ flex: 1 }}>
-                    <View style={{ flex: 15 }}>
-                        <View style={{ flex: 50, flexDirection: 'row' }}>
-                            <View style={{ flex: 20, justifyContent: 'center' }}>
-                                <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 14 }}>
-                                    Tên tiêu đề
-                                </Text>
-                            </View>
-                            <View style={{ flex: 80 }}>
-                                <TextInput placeholder='Tiêu đề' style={{ flex: 1, borderColor: 'black', borderWidth: 1, marginLeft: 10 }} > </TextInput>
-                            </View>
+               <View style={{ flex: 1,backgroundColor:"white",borderRadius:10,borderColor:"black",borderWidth:1 }}>
+                 
+                 <View style={{ flex: 1,alignItems:"center",justifyContent:"center",flexDirection:"row",borderBottomColor:"black",borderBottomWidth:1,backgroundColor:"black"}}>
+                         <TextInput style={{borderRadius:10,marginLeft:10,marginRight:10,borderColor:"black",borderWidth:1,width:"80%",backgroundColor:"white"}} 
+                         placeholder="Nhập việc cần làm..."
+                         maxLength={40}
+                         onChangeText={text=>setitemtodolist(text)}/>
+                         <Button title='Thêm' onPress={()=>{
+                             if(itemtodolist=="")
+                             {
+                                 return;
+                             }
+                             setmainstate(
+                                 {...mainstate,list:[...mainstate.list,{key:keynum,value:itemtodolist}]});
+                             setkeynum(keynum+1);
+                             
+                              }}/>       
+                 </View>
+                 <View style={{flex:5}}>
+                     <FlatList data={mainstate.list}
+                     keyExtractor={(item)=>item.key}
+                     renderItem={({item})=>(
+                     <TouchableOpacity 
+                     style={{borderRadius:10,alignItems:"center",justifyContent:"center",borderWidth:1,borderColor:"black",height:50,margin:10}}
+                     onPress={()=>deleteItem(item.key)}
+                     >
+                         <Text>{item.value}</Text>
+                     </TouchableOpacity>)}
+                     />
+                     <ActionButton buttonColor='#3498db' 
+                     onPress={() => 
+                     {
+                        setaddSample(false);
+                         setitemtodolist("");   
+                         savedt();
+                     }}
+                     renderIcon={active=>active?(<Icon name="done" style={styles.actionButtonIcon}/>):(<Icon name="done" style={styles.actionButtonIcon}/>)}
+                     >
+                        
+                     </ActionButton>
 
-                        </View>
-                        <View style={{ flex: 50 }}>
-
-                        </View>
-                    </View>
-
-                    <View style={{ flex: 70 }}>
-                        <View style={{ flex: 20, flexDirection: 'row' }}>
-                            <View style={{ flex: 10 }}>
-                                <Image source={require("../images/icons/branch.png")} style={{ height: 30, width: 30, }}></Image>
-
-                            </View>
-                            <View style={{ flex: 80, }}>
-                                <Text style={{ fontSize: 17, fontWeight: 'bold', color: 'black' }}>Danh sách việc</Text>
-                                {
-                                    count2 > 0 ?
-                                        ((<FlatList
-                                            data={minitasks}
-                                            renderItem={renderMinitag}
-                                            key={cat => cat.id}
-                                        />))
-                                        : (
-                                            <View style={{ flex: 10 }}>
-                                                <View style={{ flexDirection: 'row' }}>
-                                                    <View style={{ flex: 10 }}>
-                                                        <TouchableOpacity onPress={addminitag}>
-                                                            <Image source={require("../images/icons/plus.png")} style={{ height: 25, width: 25, tintColor: 'blue' }}></Image>
-                                                        </TouchableOpacity>
-
-                                                    </View>
-                                                    <View style={{ flex: 70 }}>
-                                                        <TextInput style={{ flex: 1, borderColor: 'black', borderWidth: 1 }} value={minitask} onChangeText={setminitask}></TextInput>
-                                                    </View>
-                                                </View>
-                                            </View>
-
-
-
-                                        )
-                                }
-                            </View>
-                        </View>
-
-                    </View>
-
-
-
-
-                </View>
+                 </View>
+             </View>
             </Modal>
             <TouchableOpacity style={{
                 borderColor: '#a9a9a9',
@@ -791,9 +834,9 @@ export default function Workplace() {
                     Alert.alert("Modal has been closed.");
                     setmodalVisible4(!modalVisible4);
                 }}>
-
                 <View style={{ flex: 15, alignItems: 'center', justifyContent: 'center' }}>
                     <View style={{ borderWidth: 1, borderColor: '#777', width: '95%', height: 40, flexDirection: 'row' }}>
+                       
                         <View style={{ flex: 10, justifyContent: 'center', alignItems: 'center' }}>
                             <Image source={require('../images/icons/find.png')}
                                 style={{
@@ -804,7 +847,7 @@ export default function Workplace() {
                             </Image>
 
                         </View>
-                        <View style={{ flex: 90 }}>
+                        <View style={{ flex: 80 }}>
                             <TextInput placeholder='Tên thẻ' style={{ flex: 1 }} onChangeText={text => { searchTag(text) }}>
 
                             </TextInput>
@@ -981,3 +1024,10 @@ export default function Workplace() {
 }
 
 
+const styles = StyleSheet.create({
+    actionButtonIcon: {
+      fontSize: 20,
+      height: 22,
+      color: 'black',
+    },
+  });

@@ -39,7 +39,7 @@ export default function Tabs() {
         options={{title:"Bảng"}}
         />
         <Tab.Screen name="outline" component={Outline}
-        options={{title:"Việc chưa lên kế hoạch"}}
+        options={{title:"Việc làm ngoài kế hoạch"}}
         />
         <Tab.Screen name="workplace" component={Workplace}
         options={{title:"Gian làm việc"}}
