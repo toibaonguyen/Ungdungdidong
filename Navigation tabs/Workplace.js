@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, View, Image, TouchableOpacity,Button, TextInput, FlatList,Dimensions ,StyleSheet} from 'react-native';
+import { Text, View, Image, TouchableOpacity, Button, TextInput, FlatList, Dimensions, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react/cjs/react.development';
 import ButtonUI from '../Navigation tabs/ActionScreens/Custom/UIbutton';
 import { NavigationContainer } from '@react-navigation/native';
@@ -49,7 +49,7 @@ export default function Workplace() {
     const [addmini, setaddmini] = useState(false)
 
     const [count1, Setcount1] = useState()
-    const [form, setform] = useState("")
+
     const [forms, setforms] = useState([])
 
     const [count2, Setcount2] = useState()
@@ -58,9 +58,10 @@ export default function Workplace() {
     const [id, setid] = useState(0)
     const [ID, setID] = useState("")
 
-    const [mainstate,setmainstate]=useState({list:[]})
- const [itemtodolist,setitemtodolist]=useState("");
- const [keynum, setkeynum] = useState(0);
+    const [mainstate, setmainstate] = useState({ list: [] })
+    const [itemtodolist, setitemtodolist] = useState("");
+    const [itemform, setitemform] = useState("");
+    const [keynum, setkeynum] = useState(0);
     const addTag = () => {
         if (!tag) {
             console.log('1')
@@ -105,66 +106,98 @@ export default function Workplace() {
             )
         })
     }
-    
-    async function savedt(){
+
+    const getForm = () => {
+        db.transaction(txn => {
+            txn.executeSql(
+                'SELECT * FROM FORM',
+                [],
+                (txn, res) => {
+                    console.log('lay du lieu thanh cong')
+                    let len = res.rows.length;
+                    if (len > 0) {
+                        let results = [];
+                        for (let i = 0; i < len; i++) {
+                            let item = res.rows.item(i);
+                            results.push({ name: item.name,id:item.id })
+                            console.log(results.length)
+                        }
+                        Setcount2(results.length)
+                        setforms(results)
+
+
+                    }
+                },
+                error => { console.log('loi khong lay duoc du lieu') }
+            )
+        })
+    }
+
+    async function savedt() {
         SQLite.enablePromise(true)
-        let meme=[];
+        let meme = [];
         let num;
 
-        let leng=mainstate.list.length;
-        
-        await db.transaction(async(tx)=>{
+        let leng = mainstate.list.length;
+
+        await db.transaction(async (tx) => {
             await tx.executeSql("select max(id) as maxid from FORM",
-            [],
-            (tx,results)=>{num=results.rows.item(0).maxid+1;
-            {console.log("maxid:"+ num);}},
-            error=>{alert("lỗi r ông cháu ơi")}
-            )    
+                [],
+                (tx, results) => {
+                    num = results.rows.item(0).maxid + 1;
+                    { console.log("maxid:" + num); }
+                },
+                error => { alert("lỗi r ông cháu ơi") }
+            )
         })
-        
-       
-        if(leng>0)
-        {
-            let vq="insert into miniTaskwithform VALUES "
-            for(let i=0;i<leng;i++)
-            {
-              meme.push(num,mainstate.list[i].value);
-              vq+='(?,?)';
-              if(i!=leng-1)
-              {
-                vq+=','
-              }
+        await db.transaction(async (tx) => {
+
+            await tx.executeSql("insert into FORM (id,name) values(?,?)",
+                [num, itemform],
+                (tx, results) => { alert("Nhập dữ liệu thành công"); setitemform(""); getForm() },
+                error => { alert("lỗi r ông cháu ơi") }
+            )
+        })
+
+
+        if (leng > 0) {
+            let vq = "insert into miniTaskwithform VALUES "
+            for (let i = 0; i < leng; i++) {
+                meme.push(num, mainstate.list[i].value);
+                vq += '(?,?)';
+                if (i != leng - 1) {
+                    vq += ','
+                }
             }
             console.log(meme);
             db.transaction(
-                async(tx)=>{
+                async (tx) => {
                     await tx.executeSql(vq,
-                    meme,
-                    (tx,results)=>{console.log("Chèn minitask thành công")},
-                    error=>{console.log(error)}
+                        meme,
+                        (tx, results) => { console.log("Chèn minitask thành công") },
+                        error => { console.log(error) }
                     )
                 })
 
         }
-       
+
     }
 
 
 
-     
-    function giveID()
-    {
-        db.transaction(txn =>{
-        txn.executeSql(
-            "SELECT * FROM FORM"),
-            [],
-            (txn, ress) => {
-                console.log('lay id duoc ne',id)
-                let len = ress.rows.length;
-                setid(len + 1)
-            }, error => { console.log('lay id ko dc') }
+
+    function giveID() {
+        db.transaction(txn => {
+            txn.executeSql(
+                "SELECT * FROM FORM"),
+                [],
+                (txn, ress) => {
+                    console.log('lay id duoc ne', id)
+                    let len = ress.rows.length;
+                    setid(len + 1)
+                }, error => { console.log('lay id ko dc') }
         })
-         return id;
+        return id;
     }
     const getminitask = (ID) => {
         db.transaction(txn => {
@@ -183,7 +216,7 @@ export default function Workplace() {
                             results.push({ tagname: item.tagname })
                             console.log(results.length)
                         }
-                        Setcount2(results.length)
+                        Setcount3(results.length)
                         setminitasks(results)
 
 
@@ -204,8 +237,8 @@ export default function Workplace() {
 
             txn.executeSql('INSERT INTO miniTASK (idmaintask,name) VALUES (?,?)', [id, minitask],
                 () => {
-                    console.log(id,minitask)
-                    
+                    console.log(id, minitask)
+
                     setID(id)
                     getminitask(id)
                     setminitask("")
@@ -218,15 +251,17 @@ export default function Workplace() {
 
     const deleteItem = (id) => {
 
-        setmainstate({...mainstate,
-         list: mainstate.list.filter(item => item.key !== id)
+        setmainstate({
+            ...mainstate,
+            list: mainstate.list.filter(item => item.key !== id)
         })
-     
-     }
+
+    }
 
 
     useEffect(async () => {
         await getTag()
+        await getForm()
         await getminitask()
         await getJan()
         await getFeb()
@@ -240,10 +275,28 @@ export default function Workplace() {
         await getOct()
         await getNov()
         await getDec()
-        
-        
-    }, [])
 
+
+    }, [])
+     
+    function deleteFORM(id) {
+        db.transaction(tx => {
+            tx.executeSql('DELETE FROM FORM WHERE id=?', [id],
+                () => { console.log('xoa thanh cong') },
+                error => { console.log('xoa that bai') })
+        }
+
+        )
+        setforms(forms.filter(i => i.id !== id))
+        
+        db.transaction(tx => {
+            tx.executeSql('DELETE FROM miniTaskwithform WHERE idform=?', [id],
+                () => { console.log('xoa thanh cong minitask') },
+                error => { console.log('xoa that bai mini') })
+        }
+
+        )
+    }
 
     function deleteTag(tagname) {
         db.transaction(tx => {
@@ -257,14 +310,17 @@ export default function Workplace() {
     }
 
 
-    const renderMinitag = ({ item }) => {
+    const renderform = ({ item }) => {
         return (
             <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: "#ddd", flexDirection: "row" }}>
                 <View style={{ flex: 90 }}>
-                    <Text>{item.tagname}</Text>
+                    <Text>{item.name}</Text>
                 </View>
                 <View>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => {
+                        deleteFORM(item.id)
+
+                    }}>
                         <Image source={require("../images/icons/delete.png")} style={{ height: 20, width: 20 }}>
 
                         </Image>
@@ -302,334 +358,322 @@ export default function Workplace() {
     function searchTag(texttosearch) {
         setTags(tags.filter(i => i.tagname.includes(texttosearch),),)
     }
-    const[Jan,setJan]=useState(0)
-    const[Feb,setFeb]=useState(0)
-    const[Mar,setMar]=useState(0)
-    const[Apr,setApr]=useState(0)
-    const[May,setMay]=useState(0)
-    const[Jun,setJun]=useState(0)
-    const[Jul,setJul]=useState(0)
-    const[Aug,setAug]=useState(0)
-    const[Sep,setSep]=useState(0)
-    const[Oct,setOct]=useState(0)
-    const[Nov,setNov]=useState(0)
-    const[Dec,setDec]=useState(0)
+    const [Jan, setJan] = useState(0)
+    const [Feb, setFeb] = useState(0)
+    const [Mar, setMar] = useState(0)
+    const [Apr, setApr] = useState(0)
+    const [May, setMay] = useState(0)
+    const [Jun, setJun] = useState(0)
+    const [Jul, setJul] = useState(0)
+    const [Aug, setAug] = useState(0)
+    const [Sep, setSep] = useState(0)
+    const [Oct, setOct] = useState(0)
+    const [Nov, setNov] = useState(0)
+    const [Dec, setDec] = useState(0)
 
     const getJan = () => {
         db.transaction((tx) => {
             tx.executeSql("select * from TASK where completed='0'",
-              [],
-              (tx, results) => {
-      
-                const len = results.rows.length;
-                let newarrqq = [];
-                if (len > 0) {
-      
-                  
-                  for (let i = 0; i < len; i++) {
-               
-                      let timetocompare=new Date(results.rows.item(i).endtime)
-                    
-                      if(timetocompare.getMonth()==0)
-                      {
-                      newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
-                      }
-                  }
-                  setJan(newarrqq.length)                
-                }
-              },
-              error => { console.log(error) }
-            )
-          })
-    
-      }
+                [],
+                (tx, results) => {
 
-      const getFeb = () => {
-        db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-    
-              const len = results.rows.length; let newarrqq1 = [];
-              if (len > 0) {
-    
-               
-                for (let i = 0; i < len; i++) {
-  
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==1)
-                    {
-                    newarrqq1.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+                    const len = results.rows.length;
+                    let newarrqq = [];
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+
+                            if (timetocompare.getMonth() == 0) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setJan(newarrqq.length)
                     }
-                }
-                setFeb(newarrqq1.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getMar = () => {
+
+    }
+
+    const getFeb = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-               
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==2)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+
+                    const len = results.rows.length; let newarrqq1 = [];
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 1) {
+                                newarrqq1.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setFeb(newarrqq1.length)
                     }
-                }
-                setMar(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getApr = () => {
+
+    }
+    const getMar = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-               
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==3)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 2) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setMar(newarrqq.length)
                     }
-                }
-                setApr(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getMay = () => {
+
+    }
+    const getApr = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-                
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==4)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 3) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setApr(newarrqq.length)
                     }
-                }
-                setMay(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getJun = () => {
+
+    }
+    const getMay = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-                
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==5)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 4) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setMay(newarrqq.length)
                     }
-                }
-                setJun(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getJul = () => {
+
+    }
+    const getJun = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-               
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==6)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 5) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setJun(newarrqq.length)
                     }
-                }
-                setJul(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getAug = () => {
+
+    }
+    const getJul = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-               
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==7)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 6) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setJul(newarrqq.length)
                     }
-                }
-                setAug(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getSep = () => {
+
+    }
+    const getAug = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-               
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==8)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 7) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setAug(newarrqq.length)
                     }
-                }
-                setSep(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getOct = () => {
+
+    }
+    const getSep = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-                
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth==9)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 8) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setSep(newarrqq.length)
                     }
-                }
-                setOct(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getNov = () => {
+
+    }
+    const getOct = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-               
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==10)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth == 9) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setOct(newarrqq.length)
                     }
-                }
-                setNov(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
-      const getDec = () => {
+
+    }
+    const getNov = () => {
         db.transaction((tx) => {
-          tx.executeSql("select * from TASK where completed='1'",
-            [],
-            (tx, results) => {
-                let newarrqq = [];
-              const len = results.rows.length;
-              if (len > 0) {
-    
-                
-                for (let i = 0; i < len; i++) {
-                    let now=new Date();
-                    let timetocompare=new Date(results.rows.item(i).endtime)
-                    if(timetocompare.getMonth()==11)
-                    {
-                    newarrqq.push({id: results.rows.item(i).id,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 10) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setNov(newarrqq.length)
                     }
-                }
-                setDec(newarrqq.length) 
-              }
-            },
-            error => { console.log(error) }
-          )
+                },
+                error => { console.log(error) }
+            )
         })
-    
-      }
+
+    }
+    const getDec = () => {
+        db.transaction((tx) => {
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
+                    let newarrqq = [];
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare.getMonth() == 11) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setDec(newarrqq.length)
+                    }
+                },
+                error => { console.log(error) }
+            )
+        })
+
+    }
     return (
         <View style={{ flex: 1 }}>
 
@@ -639,13 +683,13 @@ export default function Workplace() {
                     Nhiệm vụ đã hoàn thành
                 </Text>
                 <View>
-                    <LineChart 
+                    <LineChart
                         data={{
-                            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+                            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
                             datasets: [
                                 {
                                     data: [
-                                        Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec
+                                        Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
                                     ]
                                 }
                             ]
@@ -675,7 +719,7 @@ export default function Workplace() {
                         style={{
                             marginVertical: 8,
                             borderRadius: 16,
-                            marginTop:20
+                            marginTop: 20
                         }}
                     />
                 </View>
@@ -691,41 +735,52 @@ export default function Workplace() {
                 }}>
                 <View style={{ flex: 1 }}>
                     <View style={{ flex: 75 }}>
-                        <View style={{ flex: 25 }}>
+                        {count2 > 0 ?
+                            (<FlatList data={forms}
+                                renderItem={renderform}
+                                key={cat => cat.id}>
 
-                        </View>
+                            </FlatList>)
+                            : (
+                                <View style={{ flex: 1 }}>
+                                    <View style={{ flex: 25 }}>
 
-                        <View style={{
-                            flex: 30,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
-                            <Image source={require('../images/sample.png')}
-                                style={{
-                                    width: 200,
-                                    height: 200,
-                                }}
-                            >
+                                    </View>
 
-                            </Image>
-                        </View>
+                                    <View style={{
+                                        flex: 30,
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}>
+                                        <Image source={require('../images/sample.png')}
+                                            style={{
+                                                width: 200,
+                                                height: 200,
+                                            }}
+                                        >
 
-                        <View style={{
-                            flex: 20,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
-                            <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'black' }}>
-                                Bạn có cùng các việc hoặc ghi chú mà
-                            </Text>
-                            <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'black' }}>
-                                phải tạo đi tạo lại nhiều lần? Hãy tạo
-                            </Text>
-                            <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'black' }}>
-                                mẫu.
-                            </Text>
+                                        </Image>
+                                    </View>
 
-                        </View>
+                                    <View style={{
+                                        flex: 20,
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}>
+                                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'black' }}>
+                                            Bạn có cùng các việc hoặc ghi chú mà
+                                        </Text>
+                                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'black' }}>
+                                            phải tạo đi tạo lại nhiều lần? Hãy tạo
+                                        </Text>
+                                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'black' }}>
+                                            mẫu.
+                                        </Text>
+
+                                    </View>
+                                </View>
+                            )}
+
 
                     </View>
 
@@ -759,49 +814,53 @@ export default function Workplace() {
                     Alert.alert("Modal has been closed.");
                     setaddSample(!addSample);
                 }}>
-               <View style={{ flex: 1,backgroundColor:"white",borderRadius:10,borderColor:"black",borderWidth:1 }}>
-                 
-                 <View style={{ flex: 1,alignItems:"center",justifyContent:"center",flexDirection:"row",borderBottomColor:"black",borderBottomWidth:1,backgroundColor:"black"}}>
-                         <TextInput style={{borderRadius:10,marginLeft:10,marginRight:10,borderColor:"black",borderWidth:1,width:"80%",backgroundColor:"white"}} 
-                         placeholder="Nhập việc cần làm..."
-                         maxLength={40}
-                         onChangeText={text=>setitemtodolist(text)}/>
-                         <Button title='Thêm' onPress={()=>{
-                             if(itemtodolist=="")
-                             {
-                                 return;
-                             }
-                             setmainstate(
-                                 {...mainstate,list:[...mainstate.list,{key:keynum,value:itemtodolist}]});
-                             setkeynum(keynum+1);
-                             
-                              }}/>       
-                 </View>
-                 <View style={{flex:5}}>
-                     <FlatList data={mainstate.list}
-                     keyExtractor={(item)=>item.key}
-                     renderItem={({item})=>(
-                     <TouchableOpacity 
-                     style={{borderRadius:10,alignItems:"center",justifyContent:"center",borderWidth:1,borderColor:"black",height:50,margin:10}}
-                     onPress={()=>deleteItem(item.key)}
-                     >
-                         <Text>{item.value}</Text>
-                     </TouchableOpacity>)}
-                     />
-                     <ActionButton buttonColor='#3498db' 
-                     onPress={() => 
-                     {
-                        setaddSample(false);
-                         setitemtodolist("");   
-                         savedt();
-                     }}
-                     renderIcon={active=>active?(<Icon name="done" style={styles.actionButtonIcon}/>):(<Icon name="done" style={styles.actionButtonIcon}/>)}
-                     >
-                        
-                     </ActionButton>
+                <View style={{ flex: 1, backgroundColor: "white", borderRadius: 10, borderColor: "black", borderWidth: 1 }}>
+                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", borderBottomColor: "black", borderBottomWidth: 1, backgroundColor: "black" }}>
 
-                 </View>
-             </View>
+                        <TextInput style={{ borderRadius: 10, borderColor: "black", borderWidth: 1, width: "80%", backgroundColor: "white" }}
+                            placeholder="Nhập tên mẫu..."
+                            maxLength={40}
+                            onChangeText={text => setitemform(text)} />
+                    </View>
+                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", flexDirection: "row", borderBottomColor: "black", borderBottomWidth: 1, backgroundColor: "black" }}>
+                        <TextInput style={{ borderRadius: 10, marginLeft: 10, marginRight: 10, borderColor: "black", borderWidth: 1, width: "80%", backgroundColor: "white" }}
+                            placeholder="Nhập việc cần làm..."
+                            maxLength={40}
+                            onChangeText={text => setitemtodolist(text)} />
+                        <Button title='Thêm' onPress={() => {
+                            if (itemtodolist == "") {
+                                return;
+                            }
+                            setmainstate(
+                                { ...mainstate, list: [...mainstate.list, { key: keynum, value: itemtodolist }] });
+                            setkeynum(keynum + 1);
+
+                        }} />
+                    </View>
+                    <View style={{ flex: 5 }}>
+                        <FlatList data={mainstate.list}
+                            keyExtractor={(item) => item.key}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={{ borderRadius: 10, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "black", height: 50, margin: 10 }}
+                                    onPress={() => deleteItem(item.key)}
+                                >
+                                    <Text>{item.value}</Text>
+                                </TouchableOpacity>)}
+                        />
+                        <ActionButton buttonColor='#3498db'
+                            onPress={() => {
+                                setaddSample(false);
+                                setitemtodolist("");
+                                savedt();
+                            }}
+                            renderIcon={active => active ? (<Icon name="done" style={styles.actionButtonIcon} />) : (<Icon name="done" style={styles.actionButtonIcon} />)}
+                        >
+
+                        </ActionButton>
+
+                    </View>
+                </View>
             </Modal>
             <TouchableOpacity style={{
                 borderColor: '#a9a9a9',
@@ -836,7 +895,7 @@ export default function Workplace() {
                 }}>
                 <View style={{ flex: 15, alignItems: 'center', justifyContent: 'center' }}>
                     <View style={{ borderWidth: 1, borderColor: '#777', width: '95%', height: 40, flexDirection: 'row' }}>
-                       
+
                         <View style={{ flex: 10, justifyContent: 'center', alignItems: 'center' }}>
                             <Image source={require('../images/icons/find.png')}
                                 style={{
@@ -1026,8 +1085,8 @@ export default function Workplace() {
 
 const styles = StyleSheet.create({
     actionButtonIcon: {
-      fontSize: 20,
-      height: 22,
-      color: 'black',
+        fontSize: 20,
+        height: 22,
+        color: 'black',
     },
-  });
+});

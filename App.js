@@ -38,7 +38,7 @@ export default function App() {
       tx.executeSql("CREATE TABLE IF NOT EXISTS miniTASK (idmaintask INTEGER NOT NULL,name TEXT NOT NULL,FOREIGN KEY(idmaintask) REFERENCES TASK(ID))"
      )})
      db.transaction( tx=>{
-      tx.executeSql("miniTaskwithform (idform INTEGER NOT NULL,name TEXT NOT NULL,FOREIGN KEY(idform) REFERENCES FORM(id))"
+      tx.executeSql("CREATE TABLE IF NOT EXISTS miniTaskwithform (idform INTEGER NOT NULL,name TEXT NOT NULL,FOREIGN KEY(idform) REFERENCES FORM(id))"
      )})
   }
 
