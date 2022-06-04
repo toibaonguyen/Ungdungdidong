@@ -850,9 +850,11 @@ export default function Workplace() {
                         />
                         <ActionButton buttonColor='#3498db'
                             onPress={() => {
-                                setaddSample(false);
-                                setitemtodolist("");
-                                savedt();
+                                if(itemform!=""){setaddSample(false);
+                                    setitemtodolist("");
+                                    savedt();}
+                                else alert("Chưa nhập tên mẫu")
+                                
                             }}
                             renderIcon={active => active ? (<Icon name="done" style={styles.actionButtonIcon} />) : (<Icon name="done" style={styles.actionButtonIcon} />)}
                         >
