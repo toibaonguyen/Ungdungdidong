@@ -42,7 +42,7 @@ export default function Tabs() {
         options={{title:"Việc làm ngoài kế hoạch"}}
         />
         <Tab.Screen name="workplace" component={Workplace}
-        options={{title:"Gian làm việca"}}
+        options={{title:"Gian làm việc"}}
         />
       </Tab.Navigator>
   );
