@@ -10,6 +10,7 @@ import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
 import Addtodo from './ActionScreens/Addtodo';
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/MaterialIcons'
+import Ditmemetvaicac from './ActionScreens/Custom/Ditmemetvaicac1';
 
 import {
     LineChart,
@@ -47,17 +48,28 @@ export default function Workplace() {
     const [search, setSearch] = useState()
     const [addSample, setaddSample] = useState(false)
     const [addmini, setaddmini] = useState(false)
-
+    const [itemlist, setitemlist] = useState([]);
     const [count1, Setcount1] = useState()
-
+    const [fullyviewitemwithid, setfullyviewitemwithid] = useState()
     const [forms, setforms] = useState([])
-
+    const [isvimodal3, setisvimodal3] = useState(false);
     const [count2, Setcount2] = useState()
     const [minitask, setminitask] = useState("")
     const [minitasks, setminitasks] = useState([])
     const [id, setid] = useState(0)
     const [ID, setID] = useState("")
+    const [idn, setidn] = useState()
+    function concainit(id) {
+        setidn(id);
+        setisvimodal3(true);
 
+    }
+    const seemore = (id) => {
+        setfullyviewitemwithid(id)
+        setisvimodal2(true)
+
+    }
+    const [isvimodal2, setisvimodal2] = useState(false);
     const [mainstate, setmainstate] = useState({ list: [] })
     const [itemtodolist, setitemtodolist] = useState("");
     const [itemform, setitemform] = useState("");
@@ -81,6 +93,27 @@ export default function Workplace() {
         })
     }
 
+    function deleteitem() {
+        db.transaction(tx => {
+            tx.executeSql("delete from minitask where idmaintask=?",
+                [idn],
+                () => { console.log("delete complete") },
+                error => console.log(error))
+
+
+        })
+        db.transaction(tx => {
+            tx.executeSql("delete from TASK where id=?",
+                [idn],
+                () => { console.log("delete complete 1") },
+                error => console.log(error))
+
+
+        })
+        setitemlist(itemlist.filter(i => i.id !== idn))
+        setisvimodal3(false);
+
+    }
     const getTag = () => {
         db.transaction(txn => {
             txn.executeSql(
@@ -119,7 +152,7 @@ export default function Workplace() {
                         let results = [];
                         for (let i = 0; i < len; i++) {
                             let item = res.rows.item(i);
-                            results.push({ name: item.name,id:item.id })
+                            results.push({ name: item.name, id: item.id })
                             console.log(results.length)
                         }
                         Setcount2(results.length)
@@ -258,6 +291,20 @@ export default function Workplace() {
 
     }
 
+    function getComplete() {
+
+        getFeb()
+        getMar()
+        getApr()
+        getMay()
+        getJun()
+        getJul()
+        getAug()
+        getSep()
+        getOct()
+        getNov()
+        getDec()
+    };
 
     useEffect(async () => {
         await getTag()
@@ -275,10 +322,39 @@ export default function Workplace() {
         await getOct()
         await getNov()
         await getDec()
+        db.transaction((tx) => {
+            tx.executeSql("select * from TASK where completed='1'",
+                [],
+                (tx, results) => {
 
+                    const len = results.rows.length;
+                    if (len > 0) {
+
+                        let newarrqq = [];
+
+                        for (let i = 0; i < len; i++) {
+                            let now = new Date();
+                            let timetocompare = new Date(results.rows.item(i).endtime)
+                            if (timetocompare = 1) {
+                                newarrqq.push({ id: results.rows.item(i).id, name: results.rows.item(i).name, time: results.rows.item(i).endtime, isdone: results.rows.item(i).completed, tag: results.rows.item(i).tag });
+                            }
+                        }
+                        setitemlist(newarrqq);
+                        console.log(itemlist);
+                        console.log(newarrqq);
+                        console.log(len);
+
+
+                        setdk(itemlist.length > 0);
+                        console.log(dk)
+                    }
+                },
+                error => { console.log(error) }
+            )
+        })
 
     }, [])
-     
+    const [dk, setdk] = useState(false)
     function deleteFORM(id) {
         db.transaction(tx => {
             tx.executeSql('DELETE FROM FORM WHERE id=?', [id],
@@ -288,7 +364,7 @@ export default function Workplace() {
 
         )
         setforms(forms.filter(i => i.id !== id))
-        
+
         db.transaction(tx => {
             tx.executeSql('DELETE FROM miniTaskwithform WHERE idform=?', [id],
                 () => { console.log('xoa thanh cong minitask') },
@@ -679,9 +755,110 @@ export default function Workplace() {
 
 
             <View style={{ height: 300, borderWidth: 1, borderColor: '#a9a9a9', borderRadius: 5, marginHorizontal: 5, marginVertical: 10 }}>
-                <Text style={{ color: 'black', marginStart: 20, marginTop: 10, fontWeight: 'bold', fontSize: 16 }} >
-                    Nhiệm vụ đã hoàn thành
-                </Text>
+                <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flex: 85 }}>
+                        <TouchableOpacity onPress={() => { setmodalVisible(!modalVisible) }}>
+
+                            <Text style={{ color: 'black', marginStart: 20, marginTop: 10, fontWeight: 'bold', fontSize: 16 }} >
+                                Nhiệm vụ đã hoàn thành
+                            </Text>
+                        </TouchableOpacity>
+
+
+                        <Modal animationType="slide"
+                            transparent={false}
+                            visible={modalVisible}
+                            onRequestClose={() => {
+                                Alert.alert("Modal has been closed.");
+                                setmodalVisible(!modalVisible);
+                            }}>
+                                <View style={{flex:10}}>
+                                <View style={{
+                                    width: '100%',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                >
+
+                                    <Text style={styles.headerText}>Nhiệm Vụ đã hoàn thành</Text>
+                                </View>
+
+                              </View>
+                              <View style={{flex:80}}>
+
+
+
+                              {
+                                itemlist.length > 0
+                                    ?
+                                    <View>
+                                                             
+                                       <FlatList data={forms}
+                                                renderItem={renderform}
+                                                key={cat => cat.id} style={{flex:1}}> 
+
+                                            </FlatList>
+                                       
+                                        <FlatList style={{ marginTop: 5 }}
+                                            data={itemlist}
+                                            keyExtractor={item => item.id}
+                                            renderItem={({ item }) => (
+                                                <View key={item.id}>
+                                                    <Ditmemetvaicac name={item.name} id={item.id} time={item.time} isdone={item.isdone}
+                                                        onPress={() => { seemore(item.id) }}
+                                                        onLongPress={() => { concainit(item.id) }}
+
+
+                                                    />
+                                                </View>
+                                            )
+                                            } />
+                 
+
+                                    </View>
+                                    : <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
+                                        <Image source={require('../images/reading.png')}
+                                            style={{
+                                                width: 150,
+                                                height: 150,
+                                            }} />
+                                        <Text>Không có công việc nào cần làm!</Text>
+                                        
+                                    </View>
+
+
+                            }
+                              </View>
+                              <View style={{ flex: 15,marginTop:10}}>
+                                            <TouchableOpacity onPress={() => setmodalVisible(!modalVisible)}>
+                                                <Image source={require("../images/icons/back.png")} style={{ height: 60, width: 60, }}>
+
+                                                </Image>
+                                            </TouchableOpacity>
+                                        </View>
+                            
+                        </Modal>
+
+
+
+
+
+
+                    </View>
+
+                    <View style={{ flex: 15, justifyContent: "center", alignItems: "center" }}>
+                        <TouchableOpacity onPress={() => getComplete()} >
+                            <Image source={require("../images/icons/refresh.png")}
+                                style={{ height: 25, width: 25 }}>
+
+                            </Image>
+                        </TouchableOpacity>
+
+                    </View>
+
+                </View>
+
                 <View>
                     <LineChart
                         data={{
@@ -736,15 +913,39 @@ export default function Workplace() {
                 <View style={{ flex: 1 }}>
                     <View style={{ flex: 75 }}>
                         {count2 > 0 ?
-                            (<FlatList data={forms}
-                                renderItem={renderform}
-                                key={cat => cat.id}>
+                            (<View>
 
-                            </FlatList>)
+                                <View style={{
+                                    width: '100%',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                >
+
+                                    <Text style={styles.headerText}>Mẫu</Text>
+                                </View>
+
+
+                                <FlatList data={forms}
+                                    renderItem={renderform}
+                                    key={cat => cat.id}>
+
+                                </FlatList>
+                            </View>
+                            )
                             : (
                                 <View style={{ flex: 1 }}>
                                     <View style={{ flex: 25 }}>
-
+                                        <View style={{
+                                            width: '100%',
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}>
+                                            {/* icon for the menu */}
+                                            <Text style={styles.headerText}>Mẫu</Text>
+                                        </View>
                                     </View>
 
                                     <View style={{
@@ -814,16 +1015,16 @@ export default function Workplace() {
                     Alert.alert("Modal has been closed.");
                     setaddSample(!addSample);
                 }}>
-                <View style={{ flex: 1, backgroundColor: "white", borderRadius: 10, borderColor: "black", borderWidth: 1 }}>
-                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", borderBottomColor: "black", borderBottomWidth: 1, backgroundColor: "black" }}>
+                <View style={{ flex: 1, backgroundColor: "white", borderColor: "black", borderWidth: 1 }}>
+                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: 'black' }}>
 
                         <TextInput style={{ borderRadius: 10, borderColor: "black", borderWidth: 1, width: "80%", backgroundColor: "white" }}
                             placeholder="Nhập tên mẫu..."
                             maxLength={40}
                             onChangeText={text => setitemform(text)} />
                     </View>
-                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", flexDirection: "row", borderBottomColor: "black", borderBottomWidth: 1, backgroundColor: "black" }}>
-                        <TextInput style={{ borderRadius: 10, marginLeft: 10, marginRight: 10, borderColor: "black", borderWidth: 1, width: "80%", backgroundColor: "white" }}
+                    <View style={{ flex: 1, alignItems: "center", flexDirection: "row", borderBottomColor: "black", borderBottomWidth: 1, backgroundColor: "black" }}>
+                        <TextInput style={{ borderRadius: 10, marginLeft: 10, marginRight: 10, borderColor: "black", borderWidth: 1, width: "75%", backgroundColor: "white" }}
                             placeholder="Nhập việc cần làm..."
                             maxLength={40}
                             onChangeText={text => setitemtodolist(text)} />
@@ -850,11 +1051,13 @@ export default function Workplace() {
                         />
                         <ActionButton buttonColor='#3498db'
                             onPress={() => {
-                                if(itemform!=""){setaddSample(false);
+                                if (itemform != "") {
+                                    setaddSample(false);
                                     setitemtodolist("");
-                                    savedt();}
+                                    savedt();
+                                }
                                 else alert("Chưa nhập tên mẫu")
-                                
+
                             }}
                             renderIcon={active => active ? (<Icon name="done" style={styles.actionButtonIcon} />) : (<Icon name="done" style={styles.actionButtonIcon} />)}
                         >
@@ -1091,4 +1294,11 @@ const styles = StyleSheet.create({
         height: 22,
         color: 'black',
     },
+
+    headerText: {
+        fontWeight: 'bold',
+        fontSize: 20,
+        color: '#333',
+        letterSpacing: 1,
+    }
 });
