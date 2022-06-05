@@ -75,6 +75,8 @@ export default function Timeline({Navigation}) {
 
     }
     
+
+    
     useEffect(()=>{
       db.transaction((tx)=>{
         tx.executeSql("select * from TASK where completed='0'",

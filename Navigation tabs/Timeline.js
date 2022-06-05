@@ -110,6 +110,42 @@ export default function Timeline({Navigation}) {
      })
 
     },[])
+    useEffect(()=>{
+      db.transaction((tx)=>{
+        tx.executeSql("select * from TASK",
+       [],
+       (tx,results)=>{
+         
+         const len=results.rows.length;  
+         if(len>0)
+         {
+           
+           let newarrqq=[];
+           
+           for(let i=0;i<len;i++)
+           {
+            let now=new Date();
+            let timetocompare=new Date(results.rows.item(i).endtime)
+            if(now.getTime()<=timetocompare.getTime())
+            {
+             newarrqq.push({id: results.rows.item(i).ID,name: results.rows.item(i).name,time:results.rows.item(i).endtime,isdone: results.rows.item(i).completed,tag:results.rows.item(i).tag});
+            }
+           }
+           setitemlist(newarrqq);
+           console.log(itemlist);
+           console.log(newarrqq);
+           console.log(len);
+           
+
+           setdk(itemlist.length>0);
+           console.log(dk)
+         }
+       },
+       error=>{console.log(error)}
+       )
+     })
+
+    },[isvimodal])
   
     
 
